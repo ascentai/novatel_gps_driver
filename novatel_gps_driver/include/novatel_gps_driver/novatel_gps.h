@@ -334,6 +334,12 @@ namespace novatel_gps_driver
       void GenerateImuMessages();
 
       /**
+       * @brief Processes any messages in our corrimudata & inspva queues in order to
+       * generate Imu messages from them.
+       */
+      void GenerateImuMessagesRaw();
+
+      /**
        * @brief Converts a BinaryMessage object into a ROS message of the appropriate type
        * and places it in the appropriate buffer.
        * @param[in] msg A valid binary message
@@ -427,6 +433,7 @@ namespace novatel_gps_driver
       InspvaParser inspva_parser_;
       InsstdevParser insstdev_parser_;
       RangeParser range_parser_;
+      RawImuDataParser raw_imudata_parser_;
       TimeParser time_parser_;
       TrackstatParser trackstat_parser_;
 
@@ -453,6 +460,8 @@ namespace novatel_gps_driver
 
       // IMU data synchronization queues
       std::queue<novatel_gps_msgs::NovatelCorrectedImuDataPtr> corrimudata_queue_;
+      std::queue<novatel_gps_msgs::NovatelRawImuDataPtr> rawimudata_queue_;
+
       std::queue<novatel_gps_msgs::InspvaPtr> inspva_queue_;
       novatel_gps_msgs::InsstdevPtr latest_insstdev_;
       novatel_gps_msgs::InscovPtr latest_inscov_;

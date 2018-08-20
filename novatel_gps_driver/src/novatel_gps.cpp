@@ -453,7 +453,6 @@ namespace novatel_gps_driver
       rawimudata_msgs_.clear();
   }
 
-
   void NovatelGps::GetGpggaMessages(std::vector<novatel_gps_msgs::GpggaPtr>& gpgga_messages)
   {
     gpgga_messages.clear();
@@ -886,6 +885,99 @@ namespace novatel_gps_driver
     imu_msgs_.clear();
   }
 
+
+  void NovatelGps::GenerateImuMessagesRaw()
+  {
+	    if (imu_rate_ <= 0.0)
+	    {
+	      ROS_WARN_ONCE("IMU rate has not been configured; cannot produce sensor_msgs/Imu messages.");
+	      return;
+	    }
+
+	    if (!latest_insstdev_ && !latest_inscov_)
+	    {
+	      // If we haven't received an INSSTDEV or an INSCOV message, don't do anything, just return.
+	      ROS_WARN_THROTTLE(1.0, "No INSSTDEV or INSCOV data yet; orientation covariance will be unavailable.");
+	    }
+
+	    size_t previous_size = imu_msgs_.size();
+	    // Only do anything if we have both CORRIMUDATA and INSPVA messages.
+	    while (!rawimudata_queue_.empty() && !inspva_queue_.empty())
+	    {
+	      novatel_gps_msgs::NovatelRawImuDataPtr rawimudata = rawimudata_queue_.front();
+	      novatel_gps_msgs::InspvaPtr inspva = inspva_queue_.front();
+
+	      double rawimudata_time = rawimudata->gps_week_num * SECONDS_PER_WEEK + rawimudata->gps_seconds;
+	      double inspva_time = inspva->novatel_msg_header.gps_week_num *
+	                               SECONDS_PER_WEEK + inspva->novatel_msg_header.gps_seconds;
+
+	      if (std::fabs(rawimudata_time - inspva_time) > IMU_TOLERANCE_S)
+	      {
+	        // If the two messages are too far apart to sync, discard the oldest one.
+	        ROS_DEBUG("INSPVA and RAWIMUDATA were unacceptably far apart.");
+	        if (rawimudata_time < inspva_time)
+	        {
+	          ROS_DEBUG("Discarding oldest RAWIMUDATA.");
+	          rawimudata_queue_.pop();
+	          continue;
+	        }
+	        else
+	        {
+	          ROS_DEBUG("Discarding oldest INSPVA.");
+	          inspva_queue_.pop();
+	          continue;
+	        }
+	      }
+	      // If we've successfully matched up two messages, remove them from their queues.
+	      inspva_queue_.pop();
+	      rawimudata_queue_.pop();
+
+	      // Now we can combine them together to make an Imu message.
+	      sensor_msgs::ImuPtr imu = boost::make_shared<sensor_msgs::Imu>();
+
+	      imu->header.stamp = rawimudata->header.stamp;
+	      imu->orientation = tf::createQuaternionMsgFromRollPitchYaw(inspva->roll * DEGREES_TO_RADIANS,
+	                                              	  	  	  	     -(inspva->pitch) * DEGREES_TO_RADIANS,
+																	 -(inspva->azimuth) * DEGREES_TO_RADIANS);
+
+	      if (latest_inscov_)
+	      {
+	        imu->orientation_covariance = latest_inscov_->attitude_covariance;
+	      }
+	      else if (latest_insstdev_)
+	      {
+	        imu->orientation_covariance[0] = std::pow(2, latest_insstdev_->pitch_dev);
+	        imu->orientation_covariance[4] = std::pow(2, latest_insstdev_->roll_dev);
+	        imu->orientation_covariance[8] = std::pow(2, latest_insstdev_->azimuth_dev);
+	      }
+	      else
+	      {
+	        imu->orientation_covariance[0] =
+	        imu->orientation_covariance[4] =
+	        imu->orientation_covariance[8] = 1e-3;
+	      }
+
+	      imu->angular_velocity.x = rawimudata->x_gyro * imu_rate_;
+	      imu->angular_velocity.y = rawimudata->y_gyro * imu_rate_;
+	      imu->angular_velocity.z = rawimudata->z_gyro * imu_rate_;
+	      imu->angular_velocity_covariance[0] =
+	      imu->angular_velocity_covariance[4] =
+	      imu->angular_velocity_covariance[8] = 1e-3;
+
+	      imu->linear_acceleration.x = rawimudata->x_accel * imu_rate_;
+	      imu->linear_acceleration.y = rawimudata->y_accel * imu_rate_;
+	      imu->linear_acceleration.z = rawimudata->z_accel * imu_rate_;
+	      imu->linear_acceleration_covariance[0] =
+	      imu->linear_acceleration_covariance[4] =
+	      imu->linear_acceleration_covariance[8] = 1e-3;
+
+	      imu_msgs_.push_back(imu);
+	    }
+
+	    size_t new_size = imu_msgs_.size() - previous_size;
+	    ROS_DEBUG("Created %lu new sensor_msgs/Imu messages.", new_size);
+  }
+
   void NovatelGps::GenerateImuMessages()
   {
     if (imu_rate_ <= 0.0)
@@ -937,8 +1029,8 @@ namespace novatel_gps_driver
 
       imu->header.stamp = corrimudata->header.stamp;
       imu->orientation = tf::createQuaternionMsgFromRollPitchYaw(inspva->roll * DEGREES_TO_RADIANS,
-                                              -(inspva->pitch) * DEGREES_TO_RADIANS,
-                                              -(inspva->azimuth) * DEGREES_TO_RADIANS);
+                                              	  	  	  	     -(inspva->pitch) * DEGREES_TO_RADIANS,
+																 -(inspva->azimuth) * DEGREES_TO_RADIANS);
 
       if (latest_inscov_)
       {
@@ -1021,6 +1113,20 @@ namespace novatel_gps_driver
         }
         GenerateImuMessages();
         break;
+      }
+      case RawImuDataParser::MESSAGE_ID:
+      {
+    	  novatel_gps_msgs::NovatelRawImuDataPtr imu = raw_imudata_parser_.ParseBinary(msg);
+    	  imu->header.stamp = stamp;
+    	  rawimudata_msgs_.push_back(imu);
+    	  rawimudata_queue_.push(imu);
+    	  if (rawimudata_queue_.size() > MAX_BUFFER_SIZE)
+		  {
+			ROS_WARN_THROTTLE(1.0, "RAWIMUDATA queue overflow.");
+			rawimudata_queue_.pop();
+		  }
+		  GenerateImuMessagesRaw();
+    	  break;
       }
       case InscovParser::MESSAGE_ID:
       {

@@ -800,6 +800,7 @@ namespace novatel_gps_driver
 			imu_msg->angular_velocity.x =  msg->x_gyro * (0.008/65536)/125 *1000 * 9.8065; //mG->m/s^2
 			imu_msg->angular_velocity.y =  msg->y_gyro * (0.008/65536)/125 *1000 * 9.8065;
 			imu_msg->angular_velocity.z =  msg->z_gyro * (0.008/65536)/125 *1000 * 9.8065;
+			raw_imu_pub_.publish(msg);
         }
 
 

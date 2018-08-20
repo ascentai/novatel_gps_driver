@@ -11,8 +11,8 @@
       frame_id: gps
 
       imu_frame_id: imu
-      imu_sample_rate: 50
-      imu_rate: 100
+      imu_sample_rate: 125
+      imu_rate: 125
       publish_imu_messages: true
       publish_imu: true
       publish_novatel_velocity: true
