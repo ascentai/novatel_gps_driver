@@ -15,6 +15,7 @@
       imu_rate: 125
       publish_imu_messages: true
       publish_imu: true
+      corrected_imu: false
       publish_novatel_velocity: true
       wait_for_position: false
      </rosparam>

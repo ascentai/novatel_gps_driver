@@ -901,7 +901,7 @@ namespace novatel_gps_driver
 	    }
 
 	    size_t previous_size = imu_msgs_.size();
-	    // Only do anything if we have both CORRIMUDATA and INSPVA messages.
+	    // Only do anything if we have both RAWIMUDATA and INSPVA messages.
 	    while (!rawimudata_queue_.empty() && !inspva_queue_.empty())
 	    {
 	      novatel_gps_msgs::NovatelRawImuDataPtr rawimudata = rawimudata_queue_.front();

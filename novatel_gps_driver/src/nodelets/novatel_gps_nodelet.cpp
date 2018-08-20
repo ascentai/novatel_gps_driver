@@ -174,6 +174,7 @@ namespace novatel_gps_driver
       imu_rate_(100.0),
       imu_sample_rate_(-1),
       publish_imu_messages_(false),
+	  corrected_imu_(true),
       publish_novatel_positions_(false),
       publish_novatel_velocity_(false),
       publish_nmea_messages_(false),
@@ -222,6 +223,8 @@ namespace novatel_gps_driver
       swri::param(priv, "publish_gpgsa", publish_gpgsa_, publish_gpgsa_);
       swri::param(priv, "publish_gpgsv", publish_gpgsv_, publish_gpgsv_);
       swri::param(priv, "publish_imu_messages", publish_imu_messages_, publish_imu_messages_);
+      swri::param(priv, "corrected_imu", corrected_imu_, corrected_imu_);
+      ROS_WARN_STREAM("Corrected IMU FLAG: "<<(int)corrected_imu_);
       swri::param(priv, "publish_novatel_positions", publish_novatel_positions_, publish_novatel_positions_);
       swri::param(priv, "publish_novatel_velocity", publish_novatel_velocity_, publish_novatel_velocity_);
       swri::param(priv, "publish_nmea_messages", publish_nmea_messages_, publish_nmea_messages_);
@@ -489,6 +492,7 @@ namespace novatel_gps_driver
     double imu_sample_rate_;
     bool span_frame_to_ros_frame_;
     bool publish_imu_messages_;
+    bool corrected_imu_;
     bool publish_novatel_positions_;
     bool publish_novatel_velocity_;
     bool publish_nmea_messages_;
@@ -777,31 +781,42 @@ namespace novatel_gps_driver
       }
       if (publish_imu_messages_)
       {
-        std::vector<novatel_gps_msgs::NovatelCorrectedImuDataPtr> novatel_imu_msgs;
-        gps_.GetNovatelCorrectedImuData(novatel_imu_msgs);
-        for (const auto& msg : novatel_imu_msgs)
-        {
-          msg->header.stamp += sync_offset;
-          msg->header.frame_id = imu_frame_id_;
-          novatel_imu_pub_.publish(msg);
-        }
+    	  if (corrected_imu_)
+    	  {
+				std::vector<novatel_gps_msgs::NovatelCorrectedImuDataPtr> novatel_imu_msgs;
+				gps_.GetNovatelCorrectedImuData(novatel_imu_msgs);
+				for (const auto& msg : novatel_imu_msgs)
+				{
+					msg->header.stamp += sync_offset;
+					msg->header.frame_id = imu_frame_id_;
+					novatel_imu_pub_.publish(msg);
+				}
+    	  }
+    	  else
+    	  {
+				std::vector<novatel_gps_msgs::NovatelRawImuDataPtr> novatel_imu_raw_msgs;
+				sensor_msgs::ImuPtr imu_msg;
+				gps_.GetNovatelRawImuData(novatel_imu_raw_msgs);
+				for (const auto& msg : novatel_imu_raw_msgs)
+				{
+					imu_msg->header.stamp += sync_offset;
+					imu_msg->header.frame_id = imu_frame_id_;
+					imu_msg->linear_acceleration.x = msg->x_accel
+							* (0.200 / 65536) / 125 * 0.0174533; //deg/s->rad/s^2
+					imu_msg->linear_acceleration.y = msg->y_accel
+							* (0.200 / 65536) / 125 * 0.0174533;
+					imu_msg->linear_acceleration.z = msg->z_accel
+							* (0.200 / 65536) / 125 * 0.0174533;
 
-        std::vector<novatel_gps_msgs::NovatelRawImuDataPtr> novatel_imu_raw_msgs;
-        sensor_msgs::ImuPtr imu_msg;
-        gps_.GetNovatelRawImuData(novatel_imu_raw_msgs);
-        for (const auto& msg : novatel_imu_raw_msgs)
-        {
-        	imu_msg->header.stamp += sync_offset;
-        	imu_msg->header.frame_id = imu_frame_id_;
-        	imu_msg->linear_acceleration.x = msg->x_accel * (0.200/65536)/125 * 0.0174533; //deg/s->rad/s^2
-			imu_msg->linear_acceleration.y = msg->y_accel * (0.200/65536)/125 * 0.0174533;
-			imu_msg->linear_acceleration.z = msg->z_accel * (0.200/65536)/125 * 0.0174533;
-
-			imu_msg->angular_velocity.x =  msg->x_gyro * (0.008/65536)/125 *1000 * 9.8065; //mG->m/s^2
-			imu_msg->angular_velocity.y =  msg->y_gyro * (0.008/65536)/125 *1000 * 9.8065;
-			imu_msg->angular_velocity.z =  msg->z_gyro * (0.008/65536)/125 *1000 * 9.8065;
-			raw_imu_pub_.publish(msg);
-        }
+					imu_msg->angular_velocity.x = msg->x_gyro * (0.008 / 65536)
+							/ 125 * 1000 * 9.8065; //mG->m/s^2
+					imu_msg->angular_velocity.y = msg->y_gyro * (0.008 / 65536)
+							/ 125 * 1000 * 9.8065;
+					imu_msg->angular_velocity.z = msg->z_gyro * (0.008 / 65536)
+							/ 125 * 1000 * 9.8065;
+					raw_imu_pub_.publish(msg);
+				}
+			}
 
 
         std::vector<sensor_msgs::ImuPtr> imu_msgs;
