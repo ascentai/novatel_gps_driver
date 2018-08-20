@@ -1,4 +1,4 @@
-# Parsed corrected IMU data from Novatel OEM6 receiver
+# Parsed corrected IMU data from Novatel
 Header header
 
 NovatelMessageHeader novatel_msg_header
@@ -13,6 +13,6 @@ float64 roll_rate
 float64 yaw_rate
 
 # accelerations are in m/s
-float64 lateral_acceleration
-float64 longitudinal_acceleration
-float64 vertical_acceleration
+float64 lateral_acceleration  #x_acc
+float64 longitudinal_acceleration #y_acc
+float64 vertical_acceleration #z_acc

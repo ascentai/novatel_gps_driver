@@ -62,6 +62,7 @@ add_library(${PROJECT_NAME}
   src/parsers/insstdev.cpp
   src/parsers/parsing_utils.cpp
   src/parsers/range.cpp
+  src/parsers/rawimudata.cpp
   src/parsers/time.cpp
   src/parsers/trackstat.cpp
 )
