@@ -68,6 +68,7 @@
 #include <novatel_gps_driver/parsers/inspva.h>
 #include <novatel_gps_driver/parsers/insstdev.h>
 #include <novatel_gps_driver/parsers/range.h>
+#include <novatel_gps_driver/parsers/rawimudata.h>
 #include <novatel_gps_driver/parsers/time.h>
 #include <novatel_gps_driver/parsers/trackstat.h>
 
@@ -188,6 +189,12 @@ namespace novatel_gps_driver
        * @param[out] imu_messages New CORRIMUDATA messages.
        */
       void GetNovatelCorrectedImuData(std::vector<novatel_gps_msgs::NovatelCorrectedImuDataPtr>& imu_messages);
+      /**
+       * @brief Provides any RAWIMUS messages that have been received since the
+       * last time this was called.
+       * @param[out] imu_messages New RAWIMUS messages.
+       */
+      void GetNovatelRawImuData(std::vector<novatel_gps_msgs::NovatelRawImuDataPtr>& imu_messages);
       /**
        * @brief Provides any BESTPOS messages that have been received since the
        * last time this was called.
@@ -425,6 +432,8 @@ namespace novatel_gps_driver
 
       // Message buffers
       boost::circular_buffer<novatel_gps_msgs::NovatelCorrectedImuDataPtr> corrimudata_msgs_;
+      boost::circular_buffer<novatel_gps_msgs::NovatelRawImuDataPtr> rawimudata_msgs_;
+
       boost::circular_buffer<novatel_gps_msgs::GpggaPtr> gpgga_msgs_;
       boost::circular_buffer<novatel_gps_msgs::Gpgga> gpgga_sync_buffer_;
       boost::circular_buffer<novatel_gps_msgs::GpgsaPtr> gpgsa_msgs_;

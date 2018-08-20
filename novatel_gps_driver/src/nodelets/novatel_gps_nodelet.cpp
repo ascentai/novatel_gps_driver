@@ -139,6 +139,7 @@
 #include <gps_common/GPSFix.h>
 #include <nodelet/nodelet.h>
 #include <novatel_gps_msgs/NovatelCorrectedImuData.h>
+#include <novatel_gps_msgs/NovatelRawImuData.h>
 #include <novatel_gps_msgs/NovatelFRESET.h>
 #include <novatel_gps_msgs/NovatelMessageHeader.h>
 #include <novatel_gps_msgs/NovatelPosition.h>
@@ -268,6 +269,7 @@ namespace novatel_gps_driver
       if (publish_imu_messages_)
       {
         imu_pub_ = swri::advertise<sensor_msgs::Imu>(node, "imu", 100);
+        raw_imu_pub_ = swri::advertise<sensor_msgs::Imu>(node, "raw_imu", 100);
         novatel_imu_pub_= swri::advertise<novatel_gps_msgs::NovatelCorrectedImuData>(node, "corrimudata", 100);
         insstdev_pub_ = swri::advertise<novatel_gps_msgs::Insstdev>(node, "insstdev", 100);
         inspva_pub_ = swri::advertise<novatel_gps_msgs::Inspva>(node, "inspva", 100);
@@ -501,6 +503,7 @@ namespace novatel_gps_driver
     ros::Publisher fix_pub_;
     ros::Publisher gps_pub_;
     ros::Publisher imu_pub_;
+    ros::Publisher raw_imu_pub_;
     ros::Publisher inscov_pub_;
     ros::Publisher inspva_pub_;
     ros::Publisher insstdev_pub_;
@@ -782,6 +785,23 @@ namespace novatel_gps_driver
           msg->header.frame_id = imu_frame_id_;
           novatel_imu_pub_.publish(msg);
         }
+
+        std::vector<novatel_gps_msgs::NovatelRawImuDataPtr> novatel_imu_raw_msgs;
+        sensor_msgs::ImuPtr imu_msg;
+        gps_.GetNovatelRawImuData(novatel_imu_raw_msgs);
+        for (const auto& msg : novatel_imu_raw_msgs)
+        {
+        	imu_msg->header.stamp += sync_offset;
+        	imu_msg->header.frame_id = imu_frame_id_;
+        	imu_msg->linear_acceleration.x = msg->x_accel * (0.200/65536)/125 * 0.0174533; //deg/s->rad/s^2
+			imu_msg->linear_acceleration.y = msg->y_accel * (0.200/65536)/125 * 0.0174533;
+			imu_msg->linear_acceleration.z = msg->z_accel * (0.200/65536)/125 * 0.0174533;
+
+			imu_msg->angular_velocity.x =  msg->x_gyro * (0.008/65536)/125 *1000 * 9.8065; //mG->m/s^2
+			imu_msg->angular_velocity.y =  msg->y_gyro * (0.008/65536)/125 *1000 * 9.8065;
+			imu_msg->angular_velocity.z =  msg->z_gyro * (0.008/65536)/125 *1000 * 9.8065;
+        }
+
 
         std::vector<sensor_msgs::ImuPtr> imu_msgs;
         gps_.GetImuMessages(imu_msgs);

@@ -446,6 +446,14 @@ namespace novatel_gps_driver
     corrimudata_msgs_.clear();
   }
 
+  void NovatelGps::GetNovatelRawImuData(std::vector<novatel_gps_msgs::NovatelRawImuDataPtr>& imu_messages)
+  {
+      imu_messages.clear();
+      imu_messages.insert(imu_messages.end(), rawimudata_msgs_.begin(), rawimudata_msgs_.end());
+      rawimudata_msgs_.clear();
+  }
+
+
   void NovatelGps::GetGpggaMessages(std::vector<novatel_gps_msgs::GpggaPtr>& gpgga_messages)
   {
     gpgga_messages.clear();
