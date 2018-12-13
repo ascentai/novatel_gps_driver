@@ -1366,6 +1366,12 @@ namespace novatel_gps_driver
       configured = configured && Write("applyvehiclebodyrotation\r\n");
     }
 
+    // enable asynchronous publishing of imurate
+    // std::stringstream command;
+    // command << std::setprecision(3);
+    // command << "log " << option->first << " ontime " << option->second << "\r\n";
+    // configured = configured && Write(command.str());
+
     for(NovatelMessageOpts::const_iterator option = opts.begin(); option != opts.end(); ++option)
     {
       std::stringstream command;
@@ -1373,7 +1379,7 @@ namespace novatel_gps_driver
 
       if (option->first == "IMURATECORRIMUS")
       {
-        command << "log " << option->first << " onnew " << option->second << "\r\n";
+        command << "log imuratecorrimusb onnew" << "\r\n";
       } else {
         command << "log " << option->first << " ontime " << option->second << "\r\n";
       }
