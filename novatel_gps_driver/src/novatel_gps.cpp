@@ -27,6 +27,8 @@
 //
 // *****************************************************************************
 
+// TODO: DONE CORRIMUDATA check
+
 #include <sstream>
 #include <net/ethernet.h>
 #include <netinet/udp.h>
@@ -560,7 +562,7 @@ namespace novatel_gps_driver
       if (!Configure(opts))
       {
         // We will not kill the connection here, because the device may already
-        // be setup to communicate correctly, but we will print a warning         
+        // be setup to communicate correctly, but we will print a warning
         ROS_ERROR("Failed to configure GPS. This port may be read only, or the "
                  "device may not be functioning as expected; however, the "
                  "driver may still function correctly if the port has already "
@@ -915,10 +917,10 @@ namespace novatel_gps_driver
       if (std::fabs(corrimudata_time - inspva_time) > IMU_TOLERANCE_S)
       {
         // If the two messages are too far apart to sync, discard the oldest one.
-        ROS_DEBUG("INSPVA and CORRIMUDATA were unacceptably far apart.");
+        ROS_DEBUG("INSPVA and IMURATECORRIMUS were unacceptably far apart.");
         if (corrimudata_time < inspva_time)
         {
-          ROS_DEBUG("Discarding oldest CORRIMUDATA.");
+          ROS_DEBUG("Discarding oldest IMURATECORRIMUS.");
           corrimudata_queue_.pop();
           continue;
         }
@@ -1030,7 +1032,7 @@ namespace novatel_gps_driver
         corrimudata_queue_.push(imu);
         if (corrimudata_queue_.size() > MAX_BUFFER_SIZE)
         {
-          ROS_WARN_THROTTLE(1.0, "CORRIMUDATA queue overflow.");
+          ROS_WARN_THROTTLE(1.0, "IMURATECORRIMUS queue overflow.");
           corrimudata_queue_.pop();
         }
         GenerateImuMessages();
@@ -1189,7 +1191,7 @@ namespace novatel_gps_driver
       velocity->header.stamp = stamp;
       novatel_velocities_.push_back(velocity);
     }
-    else if (sentence.id == "CORRIMUDATAA")
+    else if (sentence.id == "IMURATECORRIMUSA")
     {
       novatel_gps_msgs::NovatelCorrectedImuDataPtr imu = corrimudata_parser_.ParseAscii(sentence);
       imu->header.stamp = stamp;
@@ -1197,7 +1199,7 @@ namespace novatel_gps_driver
       corrimudata_queue_.push(imu);
       if (corrimudata_queue_.size() > MAX_BUFFER_SIZE)
       {
-        ROS_WARN_THROTTLE(1.0, "CORRIMUDATA queue overflow.");
+        ROS_WARN_THROTTLE(1.0, "IMURATECORRIMUS queue overflow.");
         corrimudata_queue_.pop();
       }
       GenerateImuMessages();
@@ -1278,18 +1280,18 @@ namespace novatel_gps_driver
         { "52", std::pair<double, std::string>(200, "Litef microIMU") },
         { "56", std::pair<double, std::string>(125, "Sensonor STIM300, Direct Connection") },
        };
-      
+
       // Parse out the IMU type then save it, we don't care about the rest (3rd field)
       std::string id = sentence.body.size() > 1 ? sentence.body[1] : "";
       if (rates.find(id) != rates.end())
       {
         double rate = rates[id].first;
- 
+
         ROS_INFO("IMU Type %s Found, Rate: %f Hz", rates[id].second.c_str(), (float)rate);
-        
+
         // Set the rate only if it hasnt been forced already
         if (imu_rate_forced_ == false)
-        {        
+        {
           SetImuRate(rate, false); // Dont force set from here so it can be configured elsewhere
         }
       }

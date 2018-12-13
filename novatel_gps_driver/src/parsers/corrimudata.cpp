@@ -27,11 +27,13 @@
 //
 // *****************************************************************************
 
+// TODO: DONE CORRIMUDATA check
+
 #include <novatel_gps_driver/parsers/corrimudata.h>
 #include <novatel_gps_driver/parsers/header.h>
 #include <boost/make_shared.hpp>
 
-const std::string novatel_gps_driver::CorrImuDataParser::MESSAGE_NAME = "CORRIMUDATA";
+const std::string novatel_gps_driver::CorrImuDataParser::MESSAGE_NAME = "IMURATECORRIMUS";
 
 uint32_t novatel_gps_driver::CorrImuDataParser::GetMessageId() const
 {
@@ -49,13 +51,13 @@ novatel_gps_driver::CorrImuDataParser::ParseBinary(const novatel_gps_driver::Bin
   if (bin_msg.data_.size() != BINARY_LENGTH)
   {
     std::stringstream error;
-    error << "Unexpected corrimudata message size: " << bin_msg.data_.size();
+    error << "Unexpected imuratecorrimus message size: " << bin_msg.data_.size();
     throw ParseException(error.str());
   }
   novatel_gps_msgs::NovatelCorrectedImuDataPtr ros_msg = boost::make_shared<novatel_gps_msgs::NovatelCorrectedImuData>();
   HeaderParser h_parser;
   ros_msg->novatel_msg_header = h_parser.ParseBinary(bin_msg);
-  ros_msg->novatel_msg_header.message_name = "CORRIMUDATA";
+  ros_msg->novatel_msg_header.message_name = "IMURATECORRIMUS";
 
   ros_msg->gps_week_num = ParseUInt32(&bin_msg.data_[0]);
   ros_msg->gps_seconds = ParseDouble(&bin_msg.data_[4]);
@@ -75,7 +77,7 @@ novatel_gps_driver::CorrImuDataParser::ParseAscii(const novatel_gps_driver::Nova
   if (sentence.body.size() != ASCII_FIELDS)
   {
     std::stringstream error;
-    error << "Unexpected number of fields in CORRIMUDATA log: " << sentence.body.size();
+    error << "Unexpected number of fields in IMURATECORRIMUS log: " << sentence.body.size();
     throw ParseException(error.str());
   }
   novatel_gps_msgs::NovatelCorrectedImuDataPtr msg = boost::make_shared<novatel_gps_msgs::NovatelCorrectedImuData>();
@@ -95,7 +97,7 @@ novatel_gps_driver::CorrImuDataParser::ParseAscii(const novatel_gps_driver::Nova
 
   if (!valid)
   {
-    throw ParseException("Error parsing CORRIMUDATA log.");
+    throw ParseException("Error parsing IMURATECORRIMUS log.");
   }
 
   return msg;

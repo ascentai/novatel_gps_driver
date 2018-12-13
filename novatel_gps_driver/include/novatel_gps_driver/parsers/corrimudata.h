@@ -27,6 +27,8 @@
 //
 // *****************************************************************************
 
+// TODO: DONE CORRIMUDATA check
+
 #ifndef NOVATEL_GPS_DRIVER_CORRIMUDATA_H
 #define NOVATEL_GPS_DRIVER_CORRIMUDATA_H
 

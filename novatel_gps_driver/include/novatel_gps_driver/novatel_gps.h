@@ -30,6 +30,8 @@
 #ifndef NOVATEL_OEM628_NOVATEL_GPS_H_
 #define NOVATEL_OEM628_NOVATEL_GPS_H_
 
+// TODO: DONE CORRIMUDATA check
+
 #include <map>
 #include <queue>
 #include <string>
@@ -314,7 +316,7 @@ namespace novatel_gps_driver
       /**
        * @brief Establishes a serial port connection with a NovAtel device.
        *
-       * It will create a connection set at the baud set by SetSerialBaudRate(), no parity, 
+       * It will create a connection set at the baud set by SetSerialBaudRate(), no parity,
        * no flow control, and 8N1 bits, then it will call Configure() on that connection.  After
        * this method has succeeded, RedData() and Write() can be used to communicate with
        * the device.
