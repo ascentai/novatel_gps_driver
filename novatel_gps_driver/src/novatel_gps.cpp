@@ -1371,7 +1371,7 @@ namespace novatel_gps_driver
       std::stringstream command;
       command << std::setprecision(3);
 
-      if (option->first == "imuratecorrimus")
+      if (option->first == "IMURATECORRIMUS")
       {
         command << "log " << option->first << " onnew " << option->second << "\r\n";
       } else {
