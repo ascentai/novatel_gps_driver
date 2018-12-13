@@ -1359,6 +1359,7 @@ namespace novatel_gps_driver
   {
     bool configured = true;
     configured = configured && Write("unlogall\r\n");
+    configured = configured && Write("asynchinslogging enable\r\n");
 
     if (apply_vehicle_body_rotation_)
     {
