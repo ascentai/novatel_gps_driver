@@ -1377,6 +1377,8 @@ namespace novatel_gps_driver
       std::stringstream command;
       command << std::setprecision(3);
 
+      ROS_ERROR("%s", option->first.c_str());
+
       if (option->first == "IMURATECORRIMUS")
       {
         command << "log imuratecorrimusb onnew" << "\r\n";
