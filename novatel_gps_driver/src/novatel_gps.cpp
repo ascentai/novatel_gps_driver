@@ -1054,7 +1054,7 @@ namespace novatel_gps_driver
         inspva_queue_.push(inspva);
         if (inspva_queue_.size() > MAX_BUFFER_SIZE)
         {
-          ROS_WARN_THROTTLE(1.0, "INSPVA queue overflow.");
+          ROS_WARN_THROTTLE(1.0, "INSPVA queue overflow. And corrimudata_queue_ size: %i", corrimudata_queue_.size());
           inspva_queue_.pop();
         }
         GenerateImuMessages();
