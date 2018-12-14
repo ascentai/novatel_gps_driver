@@ -62,6 +62,7 @@ add_library(${PROJECT_NAME}
   src/parsers/header.cpp
   src/parsers/heading2.cpp
   src/parsers/dual_antenna_heading.cpp
+  src/parsers/imuratecorrimus.cpp
   src/parsers/inscov.cpp
   src/parsers/inspva.cpp
   src/parsers/inspvax.cpp
