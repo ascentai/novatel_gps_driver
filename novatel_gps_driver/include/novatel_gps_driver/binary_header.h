@@ -69,19 +69,39 @@ namespace novatel_gps_driver
       sync0_ = data[0];
       sync1_ = data[1];
       sync2_ = data[2];
-      header_length_ = data[3];
-      message_id_ = ParseUInt16(&data[4]);
-      message_type_ = data[6];
-      port_address_ = data[7];
-      message_length_ = ParseUInt16(&data[8]);
-      sequence_ = ParseUInt16(&data[10]);
-      idle_time_ = data[12];
-      time_status_ = data[13];
-      week_ = ParseUInt16(&data[14]);
-      gps_ms_ = ParseUInt32(&data[16]);
-      receiver_status_ = ParseUInt32(&data[20]);
-      receiver_sw_version_ = ParseUInt16(&data[26]);
+
+      if (sync2_ == 0x12)
+      {
+        // Normal header
+        header_length_ = data[3];
+        message_id_ = ParseUInt16(&data[4]);
+        message_type_ = data[6];
+        port_address_ = data[7];
+        message_length_ = ParseUInt16(&data[8]);
+        sequence_ = ParseUInt16(&data[10]);
+        idle_time_ = data[12];
+        time_status_ = data[13];
+        week_ = ParseUInt16(&data[14]);
+        gps_ms_ = ParseUInt32(&data[16]);
+        receiver_status_ = ParseUInt32(&data[20]);
+        receiver_sw_version_ = ParseUInt16(&data[26]);
+      }
+      else if (sync2_ == 0x13)
+      {
+        // Short header
+        header_length_ = 12;
+        message_length_ = data[3];
+        message_id_ = ParseUInt16(&data[4]);
+        week_ = ParseUInt16(&data[6]);
+        gps_ms_ = ParseUInt32(&data[8]);
+      }
+      else
+      {
+        ROS_ERROR("No known parser type")
+      }
+
     }
   };
+
 }
 #endif //NOVATEL_GPS_DRIVER_BINARY_HEADER_H
