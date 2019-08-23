@@ -945,10 +945,10 @@ namespace novatel_gps_driver
       if (std::fabs(corrimudata_time - inspva_time) > IMU_TOLERANCE_S)
       {
         // If the two messages are too far apart to sync, discard the oldest one.
-        ROS_DEBUG("INSPVA and CORRIMUDATA were unacceptably far apart.");
+        ROS_DEBUG("INSPVA and IMURATECORRIMUS were unacceptably far apart.");
         if (corrimudata_time < inspva_time)
         {
-          ROS_DEBUG("Discarding oldest CORRIMUDATA.");
+          ROS_DEBUG("Discarding oldest IMURATECORRIMUS.");
           corrimudata_queue_.pop();
           continue;
         }
