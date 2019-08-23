@@ -1459,12 +1459,20 @@ namespace novatel_gps_driver
   {
     bool configured = true;
     configured = configured && Write("unlogall THISPORT_ALL\r\n");
+    // allow asynchronous logging
+    configured = configured && Write("asynchinslogging enable\r\n");
 
     if (apply_vehicle_body_rotation_)
     {
       configured = configured && Write("vehiclebodyrotation 0 0 90\r\n");
       configured = configured && Write("applyvehiclebodyrotation\r\n");
     }
+
+    // Unconditionally enable async IMURATECORRIMUS message
+    std::stringstream command;
+    command << std::setprecision(3);
+    command << "log imuratecorrimusb onnew" << "\r\n";
+    configured = configured && Write(command.str());
 
     for(NovatelMessageOpts::const_iterator option = opts.begin(); option != opts.end(); ++option)
     {
