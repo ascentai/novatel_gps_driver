@@ -1285,6 +1285,19 @@ namespace novatel_gps_driver
       }
       GenerateImuMessages();
     }
+    else if (sentence.id == "IMURATECORRIMUSA")
+    {
+      novatel_gps_msgs::NovatelCorrectedImuDataPtr imu = imuratecorrimus_parser_.ParseAscii(sentence);
+      imu->header.stamp = stamp;
+      corrimudata_msgs_.push_back(imu);
+      corrimudata_queue_.push(imu);
+      if (corrimudata_queue_.size() > MAX_BUFFER_SIZE)
+      {
+        ROS_WARN_THROTTLE(1.0, "IMURATECORRIMUSA queue overflow.");
+        corrimudata_queue_.pop();
+      }
+      GenerateImuMessages();
+    }
     else if (sentence.id == "INSCOVA")
     {
       novatel_gps_msgs::InscovPtr inscov = inscov_parser_.ParseAscii(sentence);
