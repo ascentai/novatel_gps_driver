@@ -383,6 +383,11 @@ namespace novatel_gps_driver
       size_t invalid_ascii_idx;
       size_t binary_start_idx = input.find(NOVATEL_BINARY_SYNC_BYTES, sentence_start);
 
+      if (binary_start_idx == std::string::npos)
+      {
+        binary_start_idx = input.find(NOVATEL_BINARY_SHORT_SYNC_BYTES, sentence_start);
+      }
+
       FindAsciiSentence(input, sentence_start, ascii_start_idx, ascii_end_idx, invalid_ascii_idx);
 
       ROS_DEBUG("Binary start: %lu   ASCII start / end / invalid: %lu / %lu / %lu",
