@@ -1087,6 +1087,20 @@ namespace novatel_gps_driver
         GenerateImuMessages();
         break;
       }
+      case ImuRateCorrImuSParser::MESSAGE_ID:
+      {
+        novatel_gps_msgs::NovatelCorrectedImuDataPtr imu = imuratecorrimus_parser_.ParseBinary(msg);
+        imu->header.stamp = stamp;
+        corrimudata_msgs_.push_back(imu);
+        corrimudata_queue_.push(imu);
+        if (corrimudata_queue_.size() > MAX_BUFFER_SIZE)
+        {
+          ROS_WARN_THROTTLE(1.0, "IMURATECORRIMUS queue overflow.");
+          corrimudata_queue_.pop();
+        }
+        GenerateImuMessages();
+        break;
+      }
       case InscovParser::MESSAGE_ID:
       {
         novatel_gps_msgs::InscovPtr inscov = inscov_parser_.ParseBinary(msg);

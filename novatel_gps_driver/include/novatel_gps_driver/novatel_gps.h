@@ -66,6 +66,7 @@
 #include <novatel_gps_driver/parsers/bestvel.h>
 #include <novatel_gps_driver/parsers/clocksteering.h>
 #include <novatel_gps_driver/parsers/corrimudata.h>
+#include <novatel_gps_driver/parsers/imuratecorrimus.h>
 #include <novatel_gps_driver/parsers/gpgga.h>
 #include <novatel_gps_driver/parsers/gpgsa.h>
 #include <novatel_gps_driver/parsers/gpgsv.h>
@@ -465,6 +466,7 @@ namespace novatel_gps_driver
       GpgsaParser gpgsa_parser_;
       GpgsvParser gpgsv_parser_;
       GprmcParser gprmc_parser_;
+      ImuRateCorrImuSParser imuratecorrimus_parser_;
       InscovParser inscov_parser_;
       InspvaParser inspva_parser_;
       InsstdevParser insstdev_parser_;
